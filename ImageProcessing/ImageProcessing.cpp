@@ -118,20 +118,54 @@ void ImageProcessing::InitImage()
 
 void ImageProcessing::File_new()
 {
-
+	QImage image = QImage(500, 500, QImage::Format_RGB32);// 创建长宽各500的RGB图像
+	image.fill(qRgb(255, 255, 255));					 // 白色图像
+	imgLabel->setPixmap(QPixmap::fromImage(image));// 转载图像
+	imgLabel->resize(image.width(), image.height());// imgLabel与图像同大小
+	currentPath = "";								// 当前路径为空
 }
 
 void ImageProcessing::File_open()
 {
+	QString path = QFileDialog::getOpenFileName(this, tr("选择图像"), ".", tr("Images(*.jpg *.png *.bmp)"));
+	if (!path.isEmpty())                                    // 检测当前路径是否正确
+	{
+		QImage* img = new QImage();
+		if (!(img->load(path)))
+		{
+			QMessageBox::information(this, tr("错误"), tr("打开图像失败！"));
+			delete img;
+			return;
+		}
+		imgLabel->setPixmap(QPixmap::fromImage(*img));
+		imgLabel->resize(img->width(), img->height());
+		currentPath = path;
+	}
 
 }
 
-void ImageProcessing::File_save()
+void ImageProcessing::File_save() //保存
 {
-
+	if (currentPath.isEmpty())      // 判断是新建的图像还是打开的图像
+	{
+		QString path = QFileDialog::getSaveFileName(this, tr("保存图像"), ".", tr("Images(*.jpg *.png *.bmp)"));
+		{
+			if (!path.isEmpty())
+				currentPath = path;
+		}
+	}
+	QImage img = imgLabel->pixmap()->toImage();     // 读取图像
+	img.save(currentPath);                          // 保存图像
 }
 
 void ImageProcessing::File_save_as()
 {
+	QString path = QFileDialog::getSaveFileName(this, tr("图像另存为"), ".", tr("Images(*.jpg *.png *.bmp)"));
+	if (!path.isEmpty())
+	{
+		QImage img = imgLabel->pixmap()->toImage();
+		img.save(path);
+		currentPath = path;
+	}
 
 }
